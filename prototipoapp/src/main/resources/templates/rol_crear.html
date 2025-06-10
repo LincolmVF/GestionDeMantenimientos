@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${rol.id != null ? 'Editar Rol' : 'Crear Rol'}"></title>
+
+  <!-- Cargar Bootstrap 5.3.3 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body>
+<div class="container mt-4">
+  <h1 class="mb-4" th:text="${rol.id != null ? 'Editar Rol' : 'Crear Rol'}"></h1>
+
+  <form th:if="${rol.id == null}" th:action="@{/rol/guardar}" th:object="${rol}" method="POST">
+
+
+  <input type="hidden" th:field="*{id}">
+
+
+
+    <!-- Nombre del Rol -->
+    <div class="mb-3">
+      <label for="nombreRol" class="form-label">Nombre del Rol</label>
+      <input type="text" id="nombreRol" th:field="*{nombreRol}" class="form-control" required>
+    </div>
+
+    <!-- Selección de Permisos usando checkboxes -->
+    <div class="mb-3">
+      <label for="permisos" class="form-label">Seleccionar Permisos</label><br/>
+      <div id="permisos" class="form-check" th:each="permiso : ${permisos}">
+        <input type="checkbox"
+               th:field="*{permisionList}"
+               th:value="${permiso.id}"
+               class="form-check-input"
+               th:checked="${rol.permisionList != null && rol.permisionList.contains(permiso)}">
+        <label class="form-check-label" th:text="${permiso.name}"></label>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a th:href="@{/rol}" class="btn btn-secondary ms-2">Volver a la lista de roles</a>
+  </form>
+  <form th:if="${rol.id != null}" th:action="@{/rol/editar/guardar}" th:object="${rol}" method="POST">
+
+
+    <input type="hidden" th:field="*{id}">
+
+
+
+    <!-- Nombre del Rol -->
+    <div class="mb-3">
+      <label for="nombreRol2" class="form-label">Nombre del Rol</label>
+      <input type="text" id="nombreRol2" th:field="*{nombreRol}" class="form-control" required>
+    </div>
+
+    <!-- Selección de Permisos usando checkboxes -->
+    <div class="mb-3">
+      <label for="permisos2" class="form-label">Seleccionar Permisos</label><br/>
+      <div id="permisos2" class="form-check" th:each="permiso : ${permisos}">
+        <input type="checkbox"
+               th:field="*{permisionList}"
+               th:value="${permiso.id}"
+               class="form-check-input"
+               th:checked="${rol.permisionList != null && rol.permisionList.contains(permiso)}">
+        <label class="form-check-label" th:text="${permiso.name}"></label>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a th:href="@{/rol}" class="btn btn-secondary ms-2">Volver a la lista de roles</a>
+  </form>
+
+
+
+
+
+</div>
+
+<!-- Cargar los scripts de Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

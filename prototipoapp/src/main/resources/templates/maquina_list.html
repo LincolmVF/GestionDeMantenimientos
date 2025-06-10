@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestión de Máquinas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --sidebar-width: 280px;
+    }
+    .sidebar {
+      width: var(--sidebar-width);
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background: linear-gradient(180deg, #1a237e 0%, #283593 100%);
+      color: white;
+      z-index: 1000;
+      transition: all 0.3s;
+    }
+    .main-content {
+      margin-left: var(--sidebar-width);
+      transition: all 0.3s;
+    }
+    .page-header {
+      background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+      color: white;
+      padding: 2rem 0;
+      margin-bottom: 2rem;
+    }
+    .machine-card {
+      transition: transform 0.2s;
+    }
+    .machine-card:hover {
+      transform: translateY(-5px);
+    }
+    .status-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    @media (max-width: 768px) {
+      .sidebar {
+        margin-left: calc(-1 * var(--sidebar-width));
+      }
+      .sidebar.active {
+        margin-left: 0;
+      }
+      .main-content {
+        margin-left: 0;
+      }
+      .main-content.active {
+        margin-left: var(--sidebar-width);
+      }
+    }
+    .table-actions {
+      min-width: 200px;
+    }
+    .btn-icon {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .machine-image {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="d-flex flex-column p-3">
+    <div class="text-center mb-4">
+      <i class="bi bi-gear-wide-connected display-4"></i>
+      <h5 class="mt-2">Sistema de Gestión</h5>
+    </div>
+    <hr>
+    <ul class="nav nav-pills flex-column gap-2">
+      <li class="nav-item">
+        <a th:href="@{/home}" class="nav-link text-white">
+          <i class="bi bi-house-door-fill me-2"></i>
+          Inicio
+        </a>
+      </li>
+      <li class="nav-item">
+        <a th:href="@{/maquinas}" class="nav-link active">
+          <i class="bi bi-tools me-2"></i>
+          Máquinas
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Contenido Principal -->
+<div class="main-content">
+  <!-- Encabezado -->
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="display-5">Gestión de Máquinas</h1>
+          <p class="lead mb-0">Visualiza y administra el inventario de máquinas</p>
+        </div>
+        <button class="btn btn-light d-md-none" id="sidebarToggle">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <!-- Filtros y Acciones -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-4">
+            <form method="GET" action="#" class="d-flex gap-2">
+              <select name="tipoEquipo" class="form-select" onchange="this.form.submit()">
+                <option value="">Todos los tipos</option>
+                <th:block th:each="tipo : ${tiposMaquina}">
+                  <option th:value="${tipo.name}" th:text="${tipo.name}" th:selected="${tipoEquipo == tipo.name}"></option>
+                </th:block>
+              </select>
+            </form>
+          </div>
+          <div class="col-md-8 text-md-end">
+            <div class="btn-group" role="group" aria-label="Acciones de máquinas">
+              <a th:href="@{/maquinas/por-tipo}" class="btn btn-info d-inline-flex align-items-center">
+                <i class="bi bi-bar-chart-fill me-2"></i>
+                <span>Dashboard</span>
+              </a>
+              <a th:href="@{/maquinas/nueva}" class="btn btn-success d-inline-flex align-items-center">
+                <i class="bi bi-plus-circle-fill me-2"></i>
+                <span>Nueva Máquina</span>
+              </a>
+              <a th:href="@{/tipoMaquina/nuevoTipoMaquina}" class="btn btn-primary d-inline-flex align-items-center">
+                <i class="bi bi-gear-fill me-2"></i>
+                <span>Nuevo Tipo</span>
+              </a>
+              <a th:href="@{/checklist}" class="btn btn-warning d-inline-flex align-items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-table me-2" viewBox="0 0 16 16">
+                  <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm15 2h-4v3h4V4zm0 4h-4v3h4V8zm0 4h-4v3h3a1 1 0 0 0 1-1v-2zm-5 3v-3H6v3h4zm-5 0v-3H1v2a1 1 0 0 0 1 1h3zm-4-4h4V8H1v3zm0-4h4V4H1v3zm5-3v3h4V4H6zm4 4H6v3h4V8z"/>
+                </svg>
+                <span>Checklist</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de Máquinas -->
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Máquina</th>
+              <th>Detalles</th>
+              <th>Especificaciones</th>
+
+              <th class="table-actions">Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="maquina : ${maquinas}">
+              <td th:text="${maquina.idMaquina}"></td>
+              <td>
+                <div class="d-flex align-items-center gap-3">
+                  <img th:if="${maquina.imagen != null}"
+                       th:src="@{${maquina.imagen}}"
+                       class="machine-image"
+                       alt="Imagen de máquina"/>
+                  <div>
+                    <h6 class="mb-0" th:text="${maquina.nombre}"></h6>
+                    <small class="text-muted" th:text="${maquina.tipoEquipo}"></small>
+                    <br>
+                    <span class="badge px-3 py-2 text-uppercase"
+                          th:text="${maquina.estado}"
+                          th:classappend="${maquina.estado == 'Activo'} ? 'bg-success'
+                                 : (${maquina.estado == 'Desuso'} ? 'bg-warning text-dark'
+                                 : (${maquina.estado == 'Trasladado'} ? 'bg-danger'
+                                 : 'bg-secondary'))">
+            </span>
+
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <strong>Costo:</strong> <span th:text="${maquina.costoEquipo}"></span><br>
+                  <strong>Descripción:</strong> <span th:text="${maquina.descripcion}"></span>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <strong>N° Activo:</strong> <span th:text="${maquina.numeroDeActivo}"></span><br>
+                  <strong>N° SAP:</strong> <span th:text="${maquina.numeroSAP}"></span><br>
+                  <strong>Dimensiones:</strong> <span th:text="${maquina.dimenciones}"></span>
+                </div>
+              </td>
+
+              <td>
+                <div class="btn-group">
+                  <a th:href="@{/maquinas/{id}/mantenimientos(id=${maquina.idMaquina})}"
+                     class="btn btn-outline-primary btn-icon">
+                    <i class="bi bi-wrench"></i> Mantenimientos
+                  </a>
+                  <a th:href="@{/maquinas/editar/{id}(id=${maquina.idMaquina})}"
+                     class="btn btn-outline-warning btn-icon">
+                    <i class="bi bi-pencil"></i> Editar
+                  </a>
+                  <button type="button"
+                          class="btn btn-outline-danger btn-icon"
+                          th:onclick="'confirmarEliminacion(' + ${maquina.idMaquina} + ')'">
+                    <i class="bi bi-trash"></i> Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar eliminación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro de que deseas eliminar esta máquina?</p>
+        <p class="text-muted mb-0">Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmarEliminacion">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Toggle Sidebar
+  document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+    document.querySelector('.sidebar').classList.toggle('active');
+    document.querySelector('.main-content').classList.toggle('active');
+  });
+
+  // Confirmación de eliminación
+  function confirmarEliminacion(id) {
+    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+    const btnConfirmar = document.getElementById('btnConfirmarEliminacion');
+
+    btnConfirmar.onclick = function() {
+      window.location.href = `/maquinas/borrar/${id}`;
+    }
+
+    modal.show();
+  }
+</script>
+</body>
+</html>
